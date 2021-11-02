@@ -1,120 +1,100 @@
 using UnityEngine;
-using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 public class TestCode : MonoBehaviour
 {
-    public Collider collider1;
-    public Transform pointLeft;
-    public Transform pointRight;
-    public Transform pointUp;
-    public Transform pointDown;
     public Transform player;
     public Transform target;
-    public Transform point55;
-    public Transform point66;
-    Vector3 vector3 = Vector3.zero;
-    Vector3 vector4 = Vector3.zero;
-    Transform targetLookAt;
-    public Text text1;
+    Vector3 tempPoint1;
+    Vector3 centerCollider;
+    float leftDistans;
+    float rightDistans;
+    public List<Collider> AllCollider;
     Vector3 newDirection;
     void Start()
     {
-        
+        leftDistans = 0;
+        rightDistans = 0;
+        tempPoint1 = Vector3.zero;
+        Application.targetFrameRate = 60;
+        CreateNewDirection(target.position - player.position);
+        StartCoroutine(RayLaunch());
     }
     void Update()
     {
-        player.LookAt(target.position);
-        float left = 0;
-        float right = 0;
-        float leftDistans = 0;
-        float rightDistans = 0;
-
-        Vector3 vector1 = collider1.bounds.center;
-        Debug.DrawRay(player.position, player.forward*100, Color.green);
-        
-        vector3.Set(vector1.x + 100, vector1.y,vector1.z);
-        pointRight.position = collider1.bounds.ClosestPoint(vector3);
-        if(Vector3.SignedAngle(pointRight.position - player.position, player.forward, Vector3.forward) < 0)
+        // Debug.DrawRay(player.position, player.forward*2, Color.green);
+        player.rotation = Quaternion.LookRotation(newDirection, Vector3.forward);
+        Vector3 newVector = player.position + player.forward/10;
+        newVector.z = 0;
+        player.position = newVector;
+    }
+    IEnumerator RayLaunch()
+    {
+        while(true)
         {
-            left++;
-            leftDistans += Vector3.Distance(player.position,pointRight.position);
-            leftDistans += Vector3.Distance(target.position,pointRight.position);
-        }
-        else
-        {
-            right++;
-            rightDistans += Vector3.Distance(player.position,pointRight.position);
-            rightDistans += Vector3.Distance(target.position,pointRight.position);
-        }
-
-        vector3.Set(vector1.x - 100, vector1.y,vector1.z);
-        pointLeft.position = collider1.bounds.ClosestPoint(vector3);
-        if(Vector3.SignedAngle(pointLeft.position - player.position, player.forward, Vector3.forward) < 0)
-        {
-            left++;
-            leftDistans += Vector3.Distance(player.position,pointLeft.position);
-            leftDistans += Vector3.Distance(target.position,pointLeft.position);
-        }
-        else
-        {
-            right++;
-            rightDistans += Vector3.Distance(player.position,pointLeft.position);
-            rightDistans += Vector3.Distance(target.position,pointLeft.position);
-        }
-
-        vector3.Set(vector1.x, vector1.y + 100,vector1.z);
-        pointUp.position = collider1.bounds.ClosestPoint(vector3);
-        if(Vector3.SignedAngle(pointUp.position - player.position, player.forward, Vector3.forward) < 0)
-        {
-            left++;
-            leftDistans += Vector3.Distance(player.position,pointUp.position);
-            leftDistans += Vector3.Distance(target.position,pointUp.position);
-        }
-        else
-        {
-            right++;
-            rightDistans += Vector3.Distance(player.position,pointUp.position);
-            rightDistans += Vector3.Distance(target.position,pointUp.position);
-        }
-
-        vector3.Set(vector1.x, vector1.y - 100,vector1.z);
-        pointDown.position = collider1.bounds.ClosestPoint(vector3);
-        if(Vector3.SignedAngle(pointDown.position - player.position, player.forward, Vector3.forward) < 0)
-        {
-            left++;
-            leftDistans += Vector3.Distance(player.position,pointDown.position);
-            leftDistans += Vector3.Distance(target.position,pointDown.position);
-        }
-        else
-        {
-            right++;
-            rightDistans += Vector3.Distance(player.position,pointDown.position);
-            rightDistans += Vector3.Distance(target.position,pointDown.position);
-        }
-
-        if(left > right)
-        {
-            text1.text = "right " + left + " - " + right;
-        }
-        else if (left < right)
-        {
-            text1.text = "left " + left + " - " + right;
-        }
-        else
-        {
-            if(leftDistans > rightDistans)
+            float randomValue = Random.Range(0.3f,1.7f);
+            Vector3 newVector = player.position - player.right + player.right * randomValue;
+            RaycastHit[] test = Physics.RaycastAll(newVector, player.forward, 2);
+            Debug.DrawRay(newVector, player.forward, Color.green);
+            if(test.Length > 0)
             {
-                text1.text = "right " + left + " - " + right;
+                foreach (var item in test)
+                {
+                    AllCollider.Add(item.collider);
+                }
+                PathChoice();
             }
             else
             {
-                text1.text = "left " + left + " - " + right;
+                CreateNewDirection(target.position - player.position);
             }
+
+            yield return new WaitForSeconds(0.01f);
+        }
+    }
+    void CreateNewDirection(Vector3 vector)
+    {
+        newDirection =  Vector3.RotateTowards(player.forward, vector,0.1f,1);
+    }
+    void PathChoice()
+    {
+        foreach (var item in AllCollider)
+        {
+            centerCollider = item.bounds.center;
+            tempPoint1.Set(centerCollider.x + 100, centerCollider.y,centerCollider.z);
+            DistanceСalculation(tempPoint1, item);
+            tempPoint1.Set(centerCollider.x - 100, centerCollider.y,centerCollider.z);
+            DistanceСalculation(tempPoint1, item);
+            tempPoint1.Set(centerCollider.x, centerCollider.y + 100,centerCollider.z);
+            DistanceСalculation(tempPoint1, item);
+            tempPoint1.Set(centerCollider.x, centerCollider.y - 100,centerCollider.z);
+            DistanceСalculation(tempPoint1, item);
         }
 
-        
-        left = 0;
-        right = 0;
+        if(leftDistans > rightDistans)
+        {
+            CreateNewDirection(-player.right + player.forward);
+        }
+        else
+        {
+            CreateNewDirection(player.right + player.forward);
+        }
         leftDistans = 0;
         rightDistans = 0;
+        AllCollider.Clear();
+    }
+    void DistanceСalculation(Vector3 vector, Collider collider)
+    {
+        Vector3 tempPoint = collider.bounds.ClosestPoint(vector);
+        if(Vector3.SignedAngle(tempPoint - player.position, player.forward, Vector3.forward) < 0)
+        {
+            leftDistans += Vector3.Distance(player.position,tempPoint);
+            leftDistans += Vector3.Distance(target.position,tempPoint);
+        }
+        else
+        {
+            rightDistans += Vector3.Distance(player.position,tempPoint);
+            rightDistans += Vector3.Distance(target.position,tempPoint);
+        }
     }
 }
