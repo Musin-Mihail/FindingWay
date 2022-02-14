@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 public class FindingWay : MonoBehaviour
 {
     public Transform startTransform;
@@ -8,10 +9,8 @@ public class FindingWay : MonoBehaviour
     public List<Vector3> wayList = new List<Vector3>();
     List<Vector3> pointList = new List<Vector3>();
     List<Vector3> allPointList = new List<Vector3>();
-    public Transform prefab;
+    List<Vector3> newAllPointList = new List<Vector3>();
     public float strideLength = 2;
-    bool match = false;
-    // float angle = 0;
     void Start()
     {
         pointList.Add(startTransform.position);
@@ -22,10 +21,18 @@ public class FindingWay : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             SearchingAllPoint();
-            if (SearchingNextPoint(startTransform.position, 1) == true)
+            Vector3 tempVector = allPointList[0];
+            allPointList.RemoveAt(0);
+            // newAllPointList = new List<Vector3>(allPointList);
+            newAllPointList = allPointList.OrderBy(x => Vector3.Distance(x, finishTransform.position)).ToList();
+            if (SearchingNextPoint(tempVector) == true)
             {
                 wayList.Add(startTransform.position);
                 PathDrawing();
+            }
+            else
+            {
+                print("3");
             }
         }
     }
@@ -45,12 +52,6 @@ public class FindingWay : MonoBehaviour
             for (float i = 0; i < 36; i++)
             {
                 Vector3 tempVector = AngleCalculationAroundY(angleRotation, startVector) + startVector;
-                if (Vector3.Distance(tempVector, finishTransform.position) < 2f)
-                {
-                    print("1");
-                    allPointList.Add(finishTransform.position);
-                    return;
-                }
                 bool bool1 = false;
                 foreach (var point in allPointList)
                 {
@@ -69,6 +70,12 @@ public class FindingWay : MonoBehaviour
                     }
                     else
                     {
+                        if (Vector3.Distance(tempVector, finishTransform.position) < 2f)
+                        {
+                            print("1");
+                            allPointList.Add(tempVector);
+                            return;
+                        }
                         Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 100);
                         pointList.Add(tempVector);
                         allPointList.Add(tempVector);
@@ -78,66 +85,32 @@ public class FindingWay : MonoBehaviour
             }
         }
     }
-    bool SearchingNextPoint(Vector3 startVector, int value)
+    bool SearchingNextPoint(Vector3 startVector)
     {
-        value++;
-        if (value > 100)
+        for (int i = 0; i < newAllPointList.Count; i++)
         {
-            return false;
-        }
-        float angle = 0;
-        float Сторона = Vector3.Dot(Vector3.right, finishTransform.position - startVector);
-        if (Сторона > 0)
-        {
-            angle = 0 + Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
-        }
-        else
-        {
-            angle = 0 - Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
-        }
-        float angleRotation = 0.0174532862792735f * angle;
-        for (float i = 0; i < 36; i++)
-        {
-            if (match == false)
+            if (Vector3.Distance(startVector, newAllPointList[i]) <= 2.0f)
             {
-                Vector3 tempVector = AngleCalculationAroundY(angleRotation, startVector) + startVector;
-                if (Vector3.Distance(tempVector, finishTransform.position) < 2f)
+                if (Vector3.Distance(newAllPointList[i], finishTransform.position) < 2.1f)
                 {
-                    print("1");
-                    match = true;
+                    // Debug.DrawRay(newAllPointList[i], finishTransform.position - newAllPointList[i], Color.red, 20);
+                    print("2");
                     wayList.Add(finishTransform.position);
+                    wayList.Add(newAllPointList[i]);
                     return true;
                 }
-                bool bool1 = false;
-                foreach (var point in allPointList)
+                Vector3 tempVector = newAllPointList[i];
+                newAllPointList.RemoveAt(i);
+                if (SearchingNextPoint(tempVector) == true)
                 {
-                    if (Vector3.Distance(tempVector, point) < 1.5f)
-                    {
-                        bool1 = true;
-                        break;
-                    }
+                    // print("4");
+                    wayList.Add(tempVector);
+                    return true;
                 }
-                if (bool1 == false)
+                else
                 {
-                    Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 20);
-                    RaycastHit hit;
-                    Ray ray = new Ray(startVector, tempVector - startVector);
-                    if (Physics.Raycast(ray, out hit, strideLength))
-                    {
-                    }
-                    else
-                    {
-
-                        allPointList.Add(tempVector);
-                        if (SearchingNextPoint(tempVector, value) == true)
-                        {
-                            wayList.Add(tempVector);
-                            return true;
-                        }
-
-                    }
+                    // print("5");
                 }
-                angleRotation += 0.1745328627927352f;
             }
         }
         return false;

@@ -340,7 +340,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 542129833}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -11.3, y: 0, z: -16.4}
+  m_LocalPosition: {x: -7.45, y: 0, z: -9.26}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -998,7 +998,6 @@ MonoBehaviour:
   startTransform: {fileID: 1652626433}
   finishTransform: {fileID: 542129834}
   wayList: []
-  prefab: {fileID: 3771962364232081693, guid: 385f5522f1a8c484db3ed4df5af20400, type: 3}
   strideLength: 2
 --- !u!4 &1215832076
 Transform:
