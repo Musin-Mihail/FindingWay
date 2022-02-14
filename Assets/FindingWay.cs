@@ -21,6 +21,7 @@ public class FindingWay : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            SearchingAllPoint();
             if (SearchingNextPoint(startTransform.position, 1) == true)
             {
                 wayList.Add(startTransform.position);
@@ -34,6 +35,49 @@ public class FindingWay : MonoBehaviour
         float z = center.z - strideLength * (1 - Mathf.Cos(angle));
         return new Vector3(x, 0, z + strideLength) - center;
     }
+    void SearchingAllPoint()
+    {
+        while (pointList.Count > 0)
+        {
+            Vector3 startVector = pointList[0];
+            pointList.RemoveAt(0);
+            float angleRotation = 0;
+            for (float i = 0; i < 36; i++)
+            {
+                Vector3 tempVector = AngleCalculationAroundY(angleRotation, startVector) + startVector;
+                if (Vector3.Distance(tempVector, finishTransform.position) < 2f)
+                {
+                    print("1");
+                    allPointList.Add(finishTransform.position);
+                    return;
+                }
+                bool bool1 = false;
+                foreach (var point in allPointList)
+                {
+                    if (Vector3.Distance(tempVector, point) < 1.5f)
+                    {
+                        bool1 = true;
+                        break;
+                    }
+                }
+                if (bool1 == false)
+                {
+                    RaycastHit hit;
+                    Ray ray = new Ray(startVector, tempVector - startVector);
+                    if (Physics.Raycast(ray, out hit, strideLength))
+                    {
+                    }
+                    else
+                    {
+                        Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 100);
+                        pointList.Add(tempVector);
+                        allPointList.Add(tempVector);
+                    }
+                }
+                angleRotation += 0.1745328627927352f;
+            }
+        }
+    }
     bool SearchingNextPoint(Vector3 startVector, int value)
     {
         value++;
@@ -42,14 +86,14 @@ public class FindingWay : MonoBehaviour
             return false;
         }
         float angle = 0;
-        float Сторона = Vector3.Dot(Vector3.right, finishTransform.position - startTransform.position);
+        float Сторона = Vector3.Dot(Vector3.right, finishTransform.position - startVector);
         if (Сторона > 0)
         {
-            angle += Vector3.Angle(Vector3.forward, finishTransform.position - startTransform.position);
+            angle = 0 + Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
         }
         else
         {
-            angle -= Vector3.Angle(Vector3.forward, finishTransform.position - startTransform.position);
+            angle = 0 - Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
         }
         float angleRotation = 0.0174532862792735f * angle;
         for (float i = 0; i < 36; i++)
@@ -83,7 +127,7 @@ public class FindingWay : MonoBehaviour
                     }
                     else
                     {
-                        
+
                         allPointList.Add(tempVector);
                         if (SearchingNextPoint(tempVector, value) == true)
                         {
