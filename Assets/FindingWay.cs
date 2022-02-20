@@ -7,6 +7,7 @@ public class FindingWay : MonoBehaviour
     public Transform startTransform;
     public Transform finishTransform;
     List<Vector3> wayList = new List<Vector3>();
+    List<Vector3> newWayList = new List<Vector3>();
     List<Vector3> pointList = new List<Vector3>();
     List<Vector3> allPointList = new List<Vector3>();
     List<Vector3> previousPointList = new List<Vector3>();
@@ -27,8 +28,27 @@ public class FindingWay : MonoBehaviour
         {
             SearchingAllPoint();
             SearchingNextPoint();
+            WayOptimization();
             PathDrawing();
         }
+    }
+    void WayOptimization()
+    {
+        RaycastHit hit;
+        newWayList.Add(wayList[0]);
+        Vector3 vector = wayList[0];
+        float distance;
+        for (int i = 0; i < wayList.Count - 1; i++)
+        {
+            distance = Vector3.Distance(vector, wayList[i + 1]);
+            Ray ray = new Ray(vector, wayList[i + 1] - vector);
+            if (Physics.Raycast(ray, out hit, distance))
+            {
+                vector = wayList[i];
+                newWayList.Add(wayList[i]);
+            }
+        }
+        newWayList.Add(wayList[wayList.Count - 1]);
     }
     Vector3 AngleCalculationAroundY(float angle, Vector3 center)
     {
@@ -43,17 +63,17 @@ public class FindingWay : MonoBehaviour
             Vector3 startVector = pointList[0];
             pointList.RemoveAt(0);
             float currentAngle = 0;
-            float angle = 0;
-            float side = Vector3.Dot(Vector3.right, finishTransform.position - startVector);
-            if (side > 0)
-            {
-                angle += Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
-            }
-            else
-            {
-                angle -= Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
-            }
-            currentAngle += oneDegree * angle;
+            // float angle = 0;
+            // float side = Vector3.Dot(Vector3.right, finishTransform.position - startVector);
+            // if (side > 0)
+            // {
+            //     angle += Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
+            // }
+            // else
+            // {
+            //     angle -= Vector3.Angle(Vector3.forward, finishTransform.position - startVector);
+            // }
+            // currentAngle += oneDegree * angle;
             for (float i = 0; i < 360 / angleRotation; i++)
             {
                 Vector3 tempVector = AngleCalculationAroundY(currentAngle, startVector) + startVector;
@@ -112,9 +132,9 @@ public class FindingWay : MonoBehaviour
     }
     void PathDrawing()
     {
-        for (int i = 0; i < wayList.Count - 1; i++)
+        for (int i = 0; i < newWayList.Count - 1; i++)
         {
-            Debug.DrawRay(wayList[i], wayList[i + 1] - wayList[i], Color.red, 20);
+            Debug.DrawRay(newWayList[i], newWayList[i + 1] - newWayList[i], Color.red, 20);
         }
     }
 }
