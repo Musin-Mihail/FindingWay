@@ -4,17 +4,16 @@ using UnityEngine;
 using System.Linq;
 public class FindingWay : MonoBehaviour
 {
-    public Transform startTransform;
-    public Transform finishTransform;
-    public List<Vector3> wayList = new List<Vector3>();
-    public List<Vector3> newWayList = new List<Vector3>();
-    public List<Vector3> pointList = new List<Vector3>();
+    [SerializeField] private Transform startTransform;
+    [SerializeField] private Transform finishTransform;
+    List<Vector3> wayList = new List<Vector3>();
+    List<Vector3> newWayList = new List<Vector3>();
+    List<Vector3> pointList = new List<Vector3>();
     List<Vector3> allPointList = new List<Vector3>();
     List<Vector3> previousPointList = new List<Vector3>();
-    List<Vector3> newAllPointList = new List<Vector3>();
     float strideLength = 2.0f;
     float oneDegree = 0.0174532862792735f;
-    int angleRotation = 90;
+    int angleRotation = 10;
     Vector3 finishPoint;
     bool math = false;
     void Start()
@@ -33,14 +32,15 @@ public class FindingWay : MonoBehaviour
             if (finishPoint != Vector3.zero)
             {
                 SearchingNextPoint();
+                PathDrawing2();
                 WayOptimization();
-                // PathDrawing();
-                newPathDrawing();
+                PathDrawing();
             }
         }
     }
     void WayOptimization()
     {
+        // newWayList = new List<Vector3>(wayList);
         newWayList.Add(wayList[0]);
         wayList.RemoveAt(0);
         RaycastHit hit;
@@ -79,7 +79,7 @@ public class FindingWay : MonoBehaviour
     {
         while (pointList.Count > 0)
         {
-            pointList = pointList.OrderBy(x => Vector3.Distance(x, finishTransform.position) + Vector3.Distance(x, startTransform.position)).ToList();
+            pointList = pointList.OrderBy(x => Vector3.Distance(finishTransform.position, x)).ToList();
             Vector3 startVector = pointList[0];
             pointList.RemoveAt(0);
             float currentAngle = 0;
@@ -162,21 +162,21 @@ public class FindingWay : MonoBehaviour
     void PathDrawing()
     {
         float distance = 0;
-        for (int i = 0; i < wayList.Count - 1; i++)
-        {
-            distance += Vector3.Distance(newWayList[i], newWayList[i + 1]);
-            Debug.DrawRay(wayList[i], wayList[i + 1] - wayList[i], Color.red, 20);
-        }
-        print(distance);
-    }
-    void newPathDrawing()
-    {
-        float distance = 0;
         for (int i = 0; i < newWayList.Count - 1; i++)
         {
             distance += Vector3.Distance(newWayList[i], newWayList[i + 1]);
             Debug.DrawRay(newWayList[i], newWayList[i + 1] - newWayList[i], Color.red, 20);
         }
-        print(distance);
+        print("red - " + distance);
+    }
+    void PathDrawing2()
+    {
+        float distance = 0;
+        for (int i = 0; i < wayList.Count - 1; i++)
+        {
+            distance += Vector3.Distance(wayList[i], wayList[i + 1]);
+            Debug.DrawRay(wayList[i], wayList[i + 1] - wayList[i], Color.green, 20);
+        }
+        print("Green - " + distance);
     }
 }
