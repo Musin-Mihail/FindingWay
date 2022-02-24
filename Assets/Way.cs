@@ -1,23 +1,16 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-public class FindingWay : MonoBehaviour
+public class Way
 {
-    [SerializeField] private Transform startTransform;
-    [SerializeField] private Transform finishTransform;
-    [SerializeField] private Transform test;
-    [SerializeField] private Transform test2;
-    [SerializeField] private Transform test3;
     Vector3 startVectror3;
     Vector3 finishVectror3;
-    public List<Vector3> wayList = new List<Vector3>();
-    public List<Vector3> newWayList = new List<Vector3>();
-    public List<Vector3> tempWayList = new List<Vector3>();
-    public List<Vector3> lastWayList = new List<Vector3>();
-    public List<Vector3> pointList = new List<Vector3>();
-    public List<Vector3> allPointList = new List<Vector3>();
-    public List<Vector3> previousPointList = new List<Vector3>();
+    List<Vector3> wayList = new List<Vector3>();
+    List<Vector3> newWayList = new List<Vector3>();
+    List<Vector3> lastWayList = new List<Vector3>();
+    List<Vector3> pointList = new List<Vector3>();
+    List<Vector3> allPointList = new List<Vector3>();
+    List<Vector3> previousPointList = new List<Vector3>();
     float strideLength = 4.0f;
     float oneDegree = 0.0174532862792735f;
     int angleRotation = 90;
@@ -25,39 +18,51 @@ public class FindingWay : MonoBehaviour
     bool math = false;
     float allDistance = 0;
     [SerializeField] private GameObject prefab;
-    void Start()
+    public void AddStartAndFinish(Vector3 startVector, Vector3 finishVector)
     {
-        startVectror3 = startTransform.position;
-        finishVectror3 = finishTransform.position;
+        startVectror3 = startVector;
+        finishVectror3 = finishVector;
         pointList.Add(startVectror3);
         allPointList.Add(startVectror3);
         previousPointList.Add(startVectror3);
     }
-    void Update()
+    public void StartSearch()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        SearchingAllPoint();
+        if (finishPoint != Vector3.zero)
         {
-            SearchingAllPoint();
-            if (finishPoint != Vector3.zero)
-            {
-                SearchingNextPoint();
-                PathDrawing(wayList, Color.green);
-            }
+            SearchingNextPoint();
+            PathDrawing(wayList, Color.green);
         }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        else
+        {
+            ResetParameters();
+        }
+    }
+    public void StartOneOptimization()
+    {
+        if (finishPoint != Vector3.zero)
         {
             WayOptimization();
             PathDrawing(newWayList, Color.red);
         }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        ResetParameters();
+    }
+    public void StartTwoOptimization()
+    {
+        if (finishPoint != Vector3.zero)
         {
+            WayOptimization();
+            PathDrawing(newWayList, Color.red);
             WayOptimization2();
+            PathDrawing(lastWayList, Color.white);
         }
+        ResetParameters();
     }
     void SearchingAllPoint()
     {
         Vector3 startVector = startVectror3;
-        while (pointList.Count < 1000)
+        while (pointList.Count < 1000 && pointList.Count > 0)
         {
             pointList = pointList.OrderBy(x => Vector3.Distance(finishVectror3, x)).ToList();
             startVector = pointList[0];
@@ -113,7 +118,7 @@ public class FindingWay : MonoBehaviour
                         return;
                     }
                 }
-                Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 100);
+                Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
                 pointList.Add(tempVector);
                 previousPointList.Add(startVector);
                 allPointList.Add(tempVector);
@@ -181,20 +186,11 @@ public class FindingWay : MonoBehaviour
         allDistance = DistanceSummation(newWayList, newWayList.Count - 1);
         int index = 0;
         List<Vector3> tempList = new List<Vector3>();
-        tempWayList = new List<Vector3>(newWayList);
+        List<Vector3> tempWayList = new List<Vector3>(newWayList);
         for (int i = 1; i < tempWayList.Count - 1; i++)
         {
-            newWayList.Clear();
-            pointList.Clear();
-            allPointList.Clear();
-            previousPointList.Clear();
-            wayList.Clear();
-            pointList.Add(startVectror3);
-            allPointList.Add(startVectror3);
-            previousPointList.Add(startVectror3);
-            finishPoint = Vector3.zero;
+            ResetParameters();
             finishVectror3 = tempWayList[i];
-            math = false;
             SearchingAllPoint();
             if (finishPoint != Vector3.zero)
             {
@@ -212,7 +208,20 @@ public class FindingWay : MonoBehaviour
         }
         lastWayList.AddRange(tempWayList.GetRange(0, index));
         lastWayList.AddRange(tempList);
-        PathDrawing(lastWayList, Color.white);
+    }
+    void ResetParameters()
+    {
+        lastWayList.Clear();
+        newWayList.Clear();
+        pointList.Clear();
+        allPointList.Clear();
+        previousPointList.Clear();
+        wayList.Clear();
+        pointList.Add(startVectror3);
+        allPointList.Add(startVectror3);
+        previousPointList.Add(startVectror3);
+        finishPoint = Vector3.zero;
+        math = false;
     }
     float DistanceSummation(List<Vector3> list, int index1)
     {
@@ -228,7 +237,7 @@ public class FindingWay : MonoBehaviour
     {
         for (int i = 0; i < list.Count - 1; i++)
         {
-            Debug.DrawRay(list[i], list[i + 1] - list[i], color, 20);
+            Debug.DrawRay(list[i], list[i + 1] - list[i], color, 5);
         }
     }
 }
