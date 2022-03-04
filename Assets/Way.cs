@@ -94,10 +94,15 @@ public class Way
         {
             AddPointToWay();
             PathDrawing(wayList, Color.green);
+            Debug.Log(DistanceSummation(wayList, wayList.Count - 1));
+
             WayOptimization();
             PathDrawing(newWayList, Color.red);
+            Debug.Log(DistanceSummation(newWayList, newWayList.Count - 1));
+
             WayOptimization2();
             PathDrawing(lastWayList, Color.white);
+            Debug.Log(DistanceSummation(lastWayList, lastWayList.Count - 1));
         }
     }
     void SearchingAllPoint()
@@ -178,8 +183,6 @@ public class Way
                         }
                     }
                 }
-
-
                 if (bool1 == false)
                 {
                     for (int i = rangeWayPoints.Count - 1; i > 0; i--)
@@ -194,26 +197,10 @@ public class Way
                         }
 
                     }
-                    // foreach (var range in rangeWayPoints)
-                    // {
-                    //     if (Vector3.Distance(range.GetCurrentVector3(), tempVector) < distanceRange)
-                    //     {
-                    //         bool1 = range.AddPoint3(tempVector);
-                    //         if (bool1 == true)
-                    //         {
-                    //             break;
-                    //         }
-                    //     }
-                    // }
                 }
-
-
                 if (bool1 == false)
                 {
                     rangeWayPoints.Add(new RangeWayPoint(tempVector));
-
-                    // GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    // sphere.transform.position = tempVector;
                 }
             }
         }
@@ -251,36 +238,37 @@ public class Way
     }
     void WayOptimization()
     {
-            newWayList.Add(wayList[0]);
-            wayList.RemoveAt(0);
-            RaycastHit hit;
+        Vector3 endPoint = wayList[0];
+        wayList.RemoveAt(0);
+        Vector3 startPoint = wayList[wayList.Count - 1];
+        wayList.RemoveAt(wayList.Count - 1);
+        newWayList.Add(endPoint);
+        SearchPoint();
+        newWayList.Add(startPoint);
+    }
+    void SearchPoint()
+    {
+        newWayList.Add(wayList[0]);
+        Vector3 save = Vector3.zero;
+        while (wayList.Count > 1)
+        {
             Vector3 vector = wayList[0];
-            float distance;
-            while (wayList.Count > 1)
+            Ray ray = new Ray(newWayList[newWayList.Count - 1], vector - newWayList[newWayList.Count - 1]);
+            float distance = Vector3.Distance(newWayList[newWayList.Count - 1], vector);
+            if (!Physics.Raycast(ray, distance))
             {
-                for (int i = wayList.Count - 1; i > 0; i--)
-                {
-                    distance = Vector3.Distance(vector, wayList[i - 1]);
-                    Ray ray = new Ray(vector, wayList[i - 1] - vector);
-                    if (Physics.Raycast(ray, out hit, distance))
-                    {
-                    }
-                    else
-                    {
-                        newWayList.Add(wayList[i - 1]);
-                        vector = wayList[i - 1];
-                        for (int y = 0; y < i; y++)
-                        {
-                            wayList.RemoveAt(0);
-                        }
-                        break;
-                    }
-                }
+                save = wayList[0];
+                wayList.RemoveAt(0);
             }
-            newWayList.Add(wayList[0]);
+            else
+            {
+                newWayList.Add(save);
+            }
+        }
     }
     void WayOptimization2()
     {
+        // Исправить вторую оптимизацию. Иногла не находит новый путь. Инагда строит только последнюю часть пути.
         allDistance = DistanceSummation(newWayList, newWayList.Count - 1);
         int index = 0;
         List<Vector3> tempList = new List<Vector3>();
@@ -292,8 +280,6 @@ public class Way
             if (finishPoint != Vector3.zero)
             {
                 AddPointToWay();
-                //Ошибка в скиске не хватает элементов
-                Debug.Log(wayList.Count);
                 WayOptimization();
                 // PathDrawing(newWayList, Color.magenta);
             }
@@ -332,7 +318,7 @@ public class Way
     {
         for (int i = 0; i < list.Count - 1; i++)
         {
-            Debug.DrawRay(list[i], list[i + 1] - list[i], color, 5);
+            Debug.DrawRay(list[i], list[i + 1] - list[i], color, 2);
         }
     }
 }
