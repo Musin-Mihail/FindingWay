@@ -100,9 +100,9 @@ public class Way
             PathDrawing(newWayList, Color.red);
             Debug.Log(DistanceSummation(newWayList, newWayList.Count - 1));
 
-            WayOptimization2();
-            PathDrawing(lastWayList, Color.white);
-            Debug.Log(DistanceSummation(lastWayList, lastWayList.Count - 1));
+            //WayOptimization2();
+            //PathDrawing(lastWayList, Color.white);
+            //Debug.Log(DistanceSummation(lastWayList, lastWayList.Count - 1));
         }
     }
     void SearchingAllPoint()
@@ -167,7 +167,7 @@ public class Way
                         return;
                     }
                 }
-                // Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
+                 Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
                 pointList.Add(tempVector);
                 wayPoints.Add(new WayPoint(tempVector, startVector));
 

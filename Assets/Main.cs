@@ -6,18 +6,24 @@ public class Main : MonoBehaviour
     [SerializeField] private Transform startTransform;
     [SerializeField] private Transform finishTransform;
     Way way = new Way();
-    Test test = new Test();
+    //Test test = new Test();
+    Labyrinth labyrinth = new Labyrinth();
     void Start()
     {
-        // test.Testing();
         way.AddStartAndFinish(startTransform.position, finishTransform.position);
     }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            // test.Testing();
+            labyrinth.CreateLabyrinth();
+            //way.StartSearch();
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            //labyrinth.CreateLabyrinth();
             way.StartSearch();
         }
     }
+
 }
