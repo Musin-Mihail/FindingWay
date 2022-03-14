@@ -7,10 +7,11 @@ public class Labyrinth
     List<Vector3> allRoomWall = new List<Vector3>();
     List<Vector3> allRoomDoor = new List<Vector3>();
     GameObject parent;
-    public void CreateLabyrinth()
+    public Vector3 CreateLabyrinth()
     {
+        Vector3 lastRoom = Vector3.zero;
         parent = new GameObject();
-        int sizeLabyrinth = 10;
+        int sizeLabyrinth = 15;
         List<Vector3> allRoomVector3 = new List<Vector3>();
         List<Vector3> newVector3 = new List<Vector3>();
         newVector3.Add(Vector3.zero);
@@ -20,7 +21,8 @@ public class Labyrinth
             {
                 for (int z = 0; z < sizeLabyrinth * sizeRoom; z += sizeRoom)
                 {
-                    allRoomVector3.Add(new Vector3(x, y, z));
+                    lastRoom = new Vector3(x, y, z);
+                    allRoomVector3.Add(lastRoom);
                 }
             }
         }
@@ -46,6 +48,7 @@ public class Labyrinth
         {
             CreateRoom(room);
         }
+        return lastRoom;
     }
     void RandomListVector3(List<Vector3> list)
     {

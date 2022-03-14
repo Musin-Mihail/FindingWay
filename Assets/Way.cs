@@ -45,9 +45,9 @@ struct RangeWayPoint
             }
         }
         points.Add(vector);
-        // GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        // sphere.transform.position = vector;
-        // sphere.GetComponent<MeshRenderer>().material.color = color;
+        //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //sphere.transform.position = vector;
+        //sphere.GetComponent<MeshRenderer>().material.color = color;
         return true;
     }
     public bool Match(Vector3 vector)
@@ -85,7 +85,7 @@ public class Way
         startVector3 = startVector;
         originalFinish = finishVector3 = finishVector;
     }
-    public void StartSearch()
+    public List<Vector3> StartSearch()
     {
         finishVector3 = originalFinish;
         rangeWayPoints.Add(new RangeWayPoint(startVector3));
@@ -104,6 +104,7 @@ public class Way
             //PathDrawing(lastWayList, Color.white);
             //Debug.Log(DistanceSummation(lastWayList, lastWayList.Count - 1));
         }
+        return newWayList;
     }
     void SearchingAllPoint()
     {
@@ -111,7 +112,7 @@ public class Way
         pointList.Add(startVector3);
         Vector3 startVector = startVector3;
         int value = 0;
-        while (value < 10000 && pointList.Count > 0)
+        while (value < 40000 && pointList.Count > 0)
         {
             value++;
             pointList = pointList.OrderBy(x => Vector3.Distance(finishVector3, x)).ToList();
@@ -167,7 +168,7 @@ public class Way
                         return;
                     }
                 }
-                 Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
+                Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
                 pointList.Add(tempVector);
                 wayPoints.Add(new WayPoint(tempVector, startVector));
 
@@ -318,7 +319,7 @@ public class Way
     {
         for (int i = 0; i < list.Count - 1; i++)
         {
-            Debug.DrawRay(list[i], list[i + 1] - list[i], color, 2);
+            Debug.DrawRay(list[i], list[i + 1] - list[i], color, 1000);
         }
     }
 }
