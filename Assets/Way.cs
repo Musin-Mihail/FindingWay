@@ -21,36 +21,47 @@ struct WayPoint
 }
 struct RangeWayPoint
 {
-    private Vector3 currentVector3;
     private List<Vector3> points;
-    private Color32 color;
-    public RangeWayPoint(Vector3 current)
+    //private Color32 color;
+    private Vector3 testVector3;
+
+    public RangeWayPoint(Vector3 vector)
     {
-        currentVector3 = current;
+        float X = vector.x - vector.x % 20;
+        float Y = vector.y - vector.y % 20;
+        float Z = vector.z - vector.z % 20;
+        testVector3 = new Vector3(X, Y, Z);
         points = new List<Vector3>();
-        points.Add(current);
-        color = new Color32((byte)Random.Range(0, 255), (byte)Random.Range(0, 255), (byte)Random.Range(0, 255), 255);
+        points.Add(vector);
+        //color = new Color32((byte)Random.Range(0, 255), (byte)Random.Range(0, 255), (byte)Random.Range(0, 255), 255);
     }
-    public Vector3 GetCurrentVector3()
-    {
-        return currentVector3;
-    }
-    public bool AddPoint3(Vector3 vector)
+    public void AddPoint3(Vector3 vector)
     {
         foreach (var point in points)
         {
             if (Vector3.Distance(point, vector) < 4 - 0.1f)
             {
-                return false;
+                return;
             }
         }
         points.Add(vector);
         //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         //sphere.transform.position = vector;
         //sphere.GetComponent<MeshRenderer>().material.color = color;
-        return true;
     }
     public bool Match(Vector3 vector)
+    {
+        float X = vector.x - vector.x % 20;
+        float Y = vector.y - vector.y % 20;
+        float Z = vector.z - vector.z % 20;
+        Vector3 newVector3 = new Vector3(X, Y, Z);
+        if (newVector3 == testVector3)
+        {
+            return true;
+        }
+        return false;
+    }
+    public bool MatchPoints(Vector3 vector)
     {
         foreach (var point in points)
         {
@@ -79,7 +90,6 @@ public class Way
     Vector3 finishPoint;
     bool math = false;
     float allDistance = 0;
-    float distanceRange = 40;
     public void AddStartAndFinish(Vector3 startVector, Vector3 finishVector)
     {
         startVector3 = startVector;
@@ -151,15 +161,14 @@ public class Way
     {
         if (FindingNearestVectors(tempVector) == false)
         {
-            RaycastHit hit;
             Ray ray = new Ray(startVector, tempVector - startVector);
-            if (!Physics.Raycast(ray, out hit, strideLength))
+            if (!Physics.Raycast(ray, strideLength))
             {
                 if (Vector3.Distance(tempVector, finishVector3) <= strideLength)
                 {
                     float distance = Vector3.Distance(tempVector, finishVector3);
                     Ray ray2 = new Ray(tempVector, finishVector3 - tempVector);
-                    if (!Physics.Raycast(ray2, out hit, distance))
+                    if (!Physics.Raycast(ray2, distance))
                     {
                         finishPoint = tempVector;
                         wayPoints.Add(new WayPoint(tempVector, startVector));
@@ -171,38 +180,15 @@ public class Way
                 Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
                 pointList.Add(tempVector);
                 wayPoints.Add(new WayPoint(tempVector, startVector));
-
-                bool bool1 = false;
-                foreach (var range in rangeWayPoints)
+                foreach (var range2 in rangeWayPoints)
                 {
-                    if (Vector3.Distance(range.GetCurrentVector3(), tempVector) < distanceRange)
+                    if (range2.Match(tempVector) == true)
                     {
-                        bool1 = range.Match(tempVector);
-                        if (bool1 == true)
-                        {
-                            break;
-                        }
+                        range2.AddPoint3(tempVector);
+                        return;
                     }
                 }
-                if (bool1 == false)
-                {
-                    for (int i = rangeWayPoints.Count - 1; i > 0; i--)
-                    {
-                        if (Vector3.Distance(rangeWayPoints[i].GetCurrentVector3(), tempVector) < distanceRange)
-                        {
-                            bool1 = rangeWayPoints[i].AddPoint3(tempVector);
-                            if (bool1 == true)
-                            {
-                                break;
-                            }
-                        }
-
-                    }
-                }
-                if (bool1 == false)
-                {
-                    rangeWayPoints.Add(new RangeWayPoint(tempVector));
-                }
+                rangeWayPoints.Add(new RangeWayPoint(tempVector));
             }
         }
     }
@@ -210,9 +196,9 @@ public class Way
     {
         foreach (var range in rangeWayPoints)
         {
-            if (Vector3.Distance(range.GetCurrentVector3(), tempVector) < distanceRange)
+            if (range.Match(tempVector) == true)
             {
-                if (range.Match(tempVector) == true)
+                if (range.MatchPoints(tempVector))
                 {
                     return true;
                 }
