@@ -5,32 +5,34 @@ public class Main : MonoBehaviour
 {
     [SerializeField] private Transform startTransform;
     [SerializeField] private Transform finishTransform;
-    Way way = new Way();
-    Labyrinth labyrinth = new Labyrinth();
-    List<Vector3> path = new List<Vector3>();
-    PathCamera pathCamera = new PathCamera();
+    private readonly Way _way = new();
+    private readonly Labyrinth _labyrinth = new();
+    private readonly PathCamera _pathCamera = new();
+    private List<Vector3> _path = new();
+    private Camera _camera;
 
-    void Update()
+    private void Start()
+    {
+        _camera = Camera.main;
+    }
+
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            var time = Time.realtimeSinceStartup;
-            finishTransform.position = labyrinth.CreateLabyrinth();
-            Debug.Log("Время создания лабиринта - " + (Time.realtimeSinceStartup - time));
+            finishTransform.position = _labyrinth.CreateLabyrinth();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            way.AddStartAndFinish(startTransform.position, finishTransform.position);
-            var time = Time.realtimeSinceStartup;
-            path = way.StartSearch();
-            Camera.main.transform.LookAt(path[path.Count - 1]);
-            Debug.Log("Время поиска маршрута - " + (Time.realtimeSinceStartup - time));
+            _way.AddStartAndFinish(startTransform.position, finishTransform.position);
+            _path = _way.StartSearch();
+            _camera.transform.LookAt(_path[^1]);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            StartCoroutine(pathCamera.Move(path, Camera.main));
+            StartCoroutine(_pathCamera.Move(_path, _camera));
         }
     }
 }

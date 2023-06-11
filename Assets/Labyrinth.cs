@@ -1,26 +1,26 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Labyrinth
 {
-    int sizeRoom = 10;
-    List<Vector3> allRoomWall = new List<Vector3>();
-    List<Vector3> allRoomDoor = new List<Vector3>();
-    GameObject parent;
+    private const int SizeRoom = 10;
+    private readonly List<Vector3> _allRoomWall = new();
+    private readonly List<Vector3> _allRoomDoor = new();
+    private GameObject _parent;
 
     public Vector3 CreateLabyrinth()
     {
-        Vector3 lastRoom = Vector3.zero;
-        parent = new GameObject();
-        int sizeLabyrinth = 15;
-        List<Vector3> allRoomVector3 = new List<Vector3>();
-        List<Vector3> newVector3 = new List<Vector3>();
-        newVector3.Add(Vector3.zero);
-        for (int x = 0; x < sizeLabyrinth * sizeRoom; x += sizeRoom)
+        var lastRoom = Vector3.zero;
+        _parent = new GameObject();
+        const int sizeLabyrinth = 15;
+        var allRoomVector3 = new List<Vector3>();
+        var newVector3 = new List<Vector3> { Vector3.zero };
+        for (var x = 0; x < sizeLabyrinth * SizeRoom; x += SizeRoom)
         {
-            for (int y = 0; y < sizeLabyrinth * sizeRoom; y += sizeRoom)
+            for (var y = 0; y < sizeLabyrinth * SizeRoom; y += SizeRoom)
             {
-                for (int z = 0; z < sizeLabyrinth * sizeRoom; z += sizeRoom)
+                for (var z = 0; z < sizeLabyrinth * SizeRoom; z += SizeRoom)
                 {
                     lastRoom = new Vector3(x, y, z);
                     allRoomVector3.Add(lastRoom);
@@ -28,22 +28,20 @@ public class Labyrinth
             }
         }
 
-        List<Vector3> tempRoomVector3 = new List<Vector3>(allRoomVector3);
+        var tempRoomVector3 = new List<Vector3>(allRoomVector3);
         RandomListVector3(allRoomVector3);
         while (allRoomVector3.Count > 0)
         {
-            Vector3 newVector = newVector3[0];
+            var newVector = newVector3[0];
             newVector3.RemoveAt(0);
-            for (int i = 0; i < allRoomVector3.Count; i++)
+            for (var i = 0; i < allRoomVector3.Count; i++)
             {
-                if (Vector3.Distance(newVector, allRoomVector3[i]) <= sizeRoom)
-                {
-                    //Debug.DrawLine(newVector, allRoomVector3[i], Color.red, 10);
-                    newVector3.Add(allRoomVector3[i]);
-                    CreateDoor(newVector, allRoomVector3[i]);
-                    allRoomVector3.RemoveAt(i);
-                    RandomListVector3(newVector3);
-                }
+                if (!(Vector3.Distance(newVector, allRoomVector3[i]) <= SizeRoom)) continue;
+                //Debug.DrawLine(newVector, allRoomVector3[i], Color.red, 10);
+                newVector3.Add(allRoomVector3[i]);
+                CreateDoor(newVector, allRoomVector3[i]);
+                allRoomVector3.RemoveAt(i);
+                RandomListVector3(newVector3);
             }
         }
 
@@ -55,78 +53,59 @@ public class Labyrinth
         return lastRoom;
     }
 
-    void RandomListVector3(List<Vector3> list)
+    private void RandomListVector3(IList<Vector3> list)
     {
-        for (int i = 0; i < list.Count; i++)
+        for (var i = 0; i < list.Count; i++)
         {
-            Vector3 temp = list[i];
-            int randomIndex = Random.Range(i, list.Count);
+            var temp = list[i];
+            var randomIndex = Random.Range(i, list.Count);
             list[i] = list[randomIndex];
             list[randomIndex] = temp;
         }
     }
 
-    void CreateDoor(Vector3 vector1, Vector3 vector2)
+    private void CreateDoor(Vector3 vector1, Vector3 vector2)
     {
-        allRoomDoor.Add((vector1 + vector2) / 2);
+        _allRoomDoor.Add((vector1 + vector2) / 2);
     }
 
-    void CreateRoom(Vector3 vector1)
+    private void CreateRoom(Vector3 vector1)
     {
-        Vector3 newWallVector3;
+        var newWallVector3 = vector1 + (Vector3.down * (SizeRoom / 2));
+        AddWall(newWallVector3, new Vector3(SizeRoom, 1, SizeRoom));
 
-        newWallVector3 = vector1 + (Vector3.down * (sizeRoom / 2));
-        AddWall(newWallVector3, new Vector3(sizeRoom, 1, sizeRoom));
+        newWallVector3 = vector1 + (Vector3.up * (SizeRoom / 2));
+        AddWall(newWallVector3, new Vector3(SizeRoom, 1, SizeRoom));
 
-        newWallVector3 = vector1 + (Vector3.up * (sizeRoom / 2));
-        AddWall(newWallVector3, new Vector3(sizeRoom, 1, sizeRoom));
+        newWallVector3 = vector1 + (Vector3.forward * (SizeRoom / 2));
+        AddWall(newWallVector3, new Vector3(SizeRoom, SizeRoom, 1));
 
-        newWallVector3 = vector1 + (Vector3.forward * (sizeRoom / 2));
-        AddWall(newWallVector3, new Vector3(sizeRoom, sizeRoom, 1));
+        newWallVector3 = vector1 + (Vector3.back * (SizeRoom / 2));
+        AddWall(newWallVector3, new Vector3(SizeRoom, SizeRoom, 1));
 
-        newWallVector3 = vector1 + (Vector3.back * (sizeRoom / 2));
-        AddWall(newWallVector3, new Vector3(sizeRoom, sizeRoom, 1));
+        newWallVector3 = vector1 + (Vector3.left * (SizeRoom / 2));
+        AddWall(newWallVector3, new Vector3(1, SizeRoom, SizeRoom));
 
-        newWallVector3 = vector1 + (Vector3.left * (sizeRoom / 2));
-        AddWall(newWallVector3, new Vector3(1, sizeRoom, sizeRoom));
-
-        newWallVector3 = vector1 + (Vector3.right * (sizeRoom / 2));
-        AddWall(newWallVector3, new Vector3(1, sizeRoom, sizeRoom));
+        newWallVector3 = vector1 + (Vector3.right * (SizeRoom / 2));
+        AddWall(newWallVector3, new Vector3(1, SizeRoom, SizeRoom));
     }
 
-    void AddWall(Vector3 newWallVector3, Vector3 scale)
+    private void AddWall(Vector3 newWallVector3, Vector3 scale)
     {
-        if (CheckMatch(newWallVector3) == true)
+        if (CheckMatch(newWallVector3))
         {
             return;
         }
 
-        GameObject boxDown = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        var boxDown = GameObject.CreatePrimitive(PrimitiveType.Cube);
         boxDown.transform.position = newWallVector3;
         boxDown.transform.localScale = scale;
-        boxDown.GetComponent<MeshRenderer>().material.color = new Color32(200, 200, 200, 50);
-        boxDown.transform.parent = parent.transform;
-        allRoomWall.Add(newWallVector3);
+        boxDown.transform.parent = _parent.transform;
+        _allRoomWall.Add(newWallVector3);
     }
 
-    bool CheckMatch(Vector3 newWallVector3)
+    private bool CheckMatch(Vector3 newWallVector3)
     {
-        foreach (var door in allRoomDoor)
-        {
-            if (newWallVector3 == door)
-            {
-                return true;
-            }
-        }
-
-        foreach (var wall in allRoomWall)
-        {
-            if (newWallVector3 == wall)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return _allRoomDoor.Any(door => newWallVector3 == door) || _allRoomWall.Any(wall => newWallVector3 == wall);
     }
 }

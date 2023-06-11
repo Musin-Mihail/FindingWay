@@ -4,28 +4,29 @@ using UnityEngine;
 
 public class PathCamera
 {
-    Camera pathCamera;
+    private Camera _pathCamera;
 
-    public IEnumerator Move(List<Vector3> list, Camera cam)
+    public IEnumerator Move(IEnumerable<Vector3> list, Camera cam)
     {
-        pathCamera = cam;
-        List<Vector3> path = new List<Vector3>(list);
-        Debug.Log(path.Count);
-        pathCamera.transform.LookAt(path[path.Count - 1]);
+        _pathCamera = cam;
+        var path = new List<Vector3>(list);
+        _pathCamera.transform.LookAt(path[^1]);
         while (path.Count > 0)
         {
-            Quaternion quaternion = Quaternion.LookRotation(path[path.Count - 1] - pathCamera.transform.position);
-            while (pathCamera.transform.rotation != quaternion)
+            Quaternion quaternion = Quaternion.LookRotation(path[^1] - _pathCamera.transform.position);
+            while (_pathCamera.transform.rotation != quaternion)
             {
-                Vector3 test = Vector3.RotateTowards(pathCamera.transform.forward, path[path.Count - 1] - pathCamera.transform.position, 1.0f * Time.deltaTime, 3);
-                test += pathCamera.transform.position;
-                pathCamera.transform.rotation = Quaternion.LookRotation(test - pathCamera.transform.position);
+                var transform = _pathCamera.transform;
+                var position = transform.position;
+                var test = Vector3.RotateTowards(transform.forward, path[^1] - position, 1.0f * Time.deltaTime, 3);
+                test += position;
+                _pathCamera.transform.rotation = Quaternion.LookRotation(test - position);
                 yield return new WaitForSeconds(0.001f);
             }
 
-            while (pathCamera.transform.position != path[path.Count - 1])
+            while (_pathCamera.transform.position != path[^1])
             {
-                pathCamera.transform.position = Vector3.MoveTowards(pathCamera.transform.position, path[path.Count - 1], 5.0f * Time.deltaTime);
+                _pathCamera.transform.position = Vector3.MoveTowards(_pathCamera.transform.position, path[^1], 5.0f * Time.deltaTime);
                 yield return new WaitForSeconds(0.001f);
             }
 
