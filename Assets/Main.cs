@@ -14,7 +14,7 @@ public class Main : MonoBehaviour
         {
             var time = Time.realtimeSinceStartup;
             finishTransform.position = labyrinth.CreateLabyrinth();
-            Debug.Log("Время создания лабиринта - " + (Time.realtimeSinceStartup - time));
+            Debug.Log("Р’СЂРµРјСЏ СЃРѕР·РґР°РЅРёСЏ Р»Р°Р±РёСЂРёРЅС‚Р° - " + (Time.realtimeSinceStartup - time));
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
@@ -22,7 +22,7 @@ public class Main : MonoBehaviour
             var time = Time.realtimeSinceStartup;
             path = way.StartSearch();
             Camera.main.transform.LookAt(path[path.Count - 1]);
-            Debug.Log("Время поиска маршрута - " + (Time.realtimeSinceStartup - time));
+            Debug.Log("Р’СЂРµРјСЏ РїРѕРёСЃРєР° РјР°СЂС€СЂСѓС‚Р° - " + (Time.realtimeSinceStartup - time));
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
