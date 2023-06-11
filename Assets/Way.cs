@@ -1,27 +1,33 @@
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
+
 struct WayPoint
 {
     private Vector3 currentPoint;
     private Vector3 previousPoint;
+
     public WayPoint(Vector3 current, Vector3 previous)
     {
         currentPoint = current;
         previousPoint = previous;
     }
+
     public Vector3 GetPreviousPoint(Vector3 comparedVector3)
     {
         if (comparedVector3 == currentPoint)
         {
             return previousPoint;
         }
+
         return Vector3.zero;
     }
 }
+
 struct RangeWayPoint
 {
     private List<Vector3> points;
+
     //private Color32 color;
     private Vector3 testVector3;
 
@@ -35,6 +41,7 @@ struct RangeWayPoint
         points.Add(vector);
         //color = new Color32((byte)Random.Range(0, 255), (byte)Random.Range(0, 255), (byte)Random.Range(0, 255), 255);
     }
+
     public void AddPoint3(Vector3 vector)
     {
         foreach (var point in points)
@@ -44,11 +51,13 @@ struct RangeWayPoint
                 return;
             }
         }
+
         points.Add(vector);
         //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         //sphere.transform.position = vector;
         //sphere.GetComponent<MeshRenderer>().material.color = color;
     }
+
     public bool Match(Vector3 vector)
     {
         float X = vector.x - vector.x % 20;
@@ -59,8 +68,10 @@ struct RangeWayPoint
         {
             return true;
         }
+
         return false;
     }
+
     public bool MatchPoints(Vector3 vector)
     {
         foreach (var point in points)
@@ -70,9 +81,11 @@ struct RangeWayPoint
                 return true;
             }
         }
+
         return false;
     }
 }
+
 public class Way
 {
     List<WayPoint> wayPoints = new List<WayPoint>();
@@ -90,11 +103,13 @@ public class Way
     Vector3 finishPoint;
     bool math = false;
     float allDistance = 0;
+
     public void AddStartAndFinish(Vector3 startVector, Vector3 finishVector)
     {
         startVector3 = startVector;
         originalFinish = finishVector3 = finishVector;
     }
+
     public List<Vector3> StartSearch()
     {
         finishVector3 = originalFinish;
@@ -114,8 +129,10 @@ public class Way
             //PathDrawing(lastWayList, Color.white);
             //Debug.Log(DistanceSummation(lastWayList, lastWayList.Count - 1));
         }
+
         return newWayList;
     }
+
     void SearchingAllPoint()
     {
         ResetParameters();
@@ -139,8 +156,10 @@ public class Way
                 {
                     return;
                 }
+
                 currentAngle += oneDegree * angleRotation;
             }
+
             tempVector = startVector + Vector3.up * strideLength;
             AddPoin(tempVector, startVector);
             tempVector = startVector + Vector3.down * strideLength;
@@ -151,12 +170,14 @@ public class Way
             }
         }
     }
+
     Vector3 AngleCalculationAroundY(float angle, Vector3 center, float y)
     {
         float x = center.x + strideLength * Mathf.Sin(angle);
         float z = center.z - strideLength * (1 - Mathf.Cos(angle));
         return new Vector3(x, y, z + strideLength) - center;
     }
+
     void AddPoin(Vector3 tempVector, Vector3 startVector)
     {
         if (FindingNearestVectors(tempVector) == false)
@@ -177,6 +198,7 @@ public class Way
                         return;
                     }
                 }
+
                 Debug.DrawRay(startVector, tempVector - startVector, Color.blue, 5);
                 pointList.Add(tempVector);
                 wayPoints.Add(new WayPoint(tempVector, startVector));
@@ -188,10 +210,12 @@ public class Way
                         return;
                     }
                 }
+
                 rangeWayPoints.Add(new RangeWayPoint(tempVector));
             }
         }
     }
+
     bool FindingNearestVectors(Vector3 tempVector)
     {
         foreach (var range in rangeWayPoints)
@@ -204,8 +228,10 @@ public class Way
                 }
             }
         }
+
         return false;
     }
+
     void AddPointToWay()
     {
         if (finishPoint == startVector3)
@@ -213,6 +239,7 @@ public class Way
             wayList.Add(startVector3);
             return;
         }
+
         for (int i = wayPoints.Count - 1; i > 0; i--)
         {
             Vector3 newPoint = wayPoints[i].GetPreviousPoint(finishPoint);
@@ -223,6 +250,7 @@ public class Way
             }
         }
     }
+
     void WayOptimization()
     {
         Vector3 endPoint = wayList[0];
@@ -233,6 +261,7 @@ public class Way
         SearchPoint();
         newWayList.Add(startPoint);
     }
+
     void SearchPoint()
     {
         newWayList.Add(wayList[0]);
@@ -253,6 +282,7 @@ public class Way
             }
         }
     }
+
     void WayOptimization2()
     {
         // Исправить вторую оптимизацию. Иногла не находит новый путь. Инагда строит только последнюю часть пути.
@@ -270,6 +300,7 @@ public class Way
                 WayOptimization();
                 // PathDrawing(newWayList, Color.magenta);
             }
+
             float distance = DistanceSummation(tempWayList, i) + DistanceSummation(newWayList, newWayList.Count - 1);
             if (distance < allDistance)
             {
@@ -278,9 +309,11 @@ public class Way
                 tempList = new List<Vector3>(newWayList);
             }
         }
+
         lastWayList.AddRange(tempWayList.GetRange(0, index));
         lastWayList.AddRange(tempList);
     }
+
     void ResetParameters()
     {
         rangeWayPoints.Clear();
@@ -292,6 +325,7 @@ public class Way
         finishPoint = Vector3.zero;
         math = false;
     }
+
     float DistanceSummation(List<Vector3> list, int index1)
     {
         float distance = 0;
@@ -299,8 +333,10 @@ public class Way
         {
             distance += Vector3.Distance(list[i], list[i + 1]);
         }
+
         return distance;
     }
+
     void PathDrawing(List<Vector3> list, Color color)
     {
         for (int i = 0; i < list.Count - 1; i++)
